@@ -16,7 +16,7 @@ export async function createQueue(userId: string, storeName: string, maxQueues: 
     createdAt: new Date(),
   });
 
-  return queueRef;
+  return queueRef.id;
 }
 
 export async function joinQueue(userId: string, queueId: string) {
