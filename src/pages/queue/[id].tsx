@@ -13,7 +13,7 @@ export default function QueuePage() {
 
   useEffect(() => {
     if (id) {
-      setQrValue(`https://yourapp.com/queue/${id}`);
+      setQrValue(`https://mosaic-waiting.vercel.app/queue/${id}`);
     }
   }, [id]);
 
