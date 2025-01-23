@@ -16,14 +16,13 @@ export default function Home() {
   const handleCreateQueue = async () => {
     if (user) {
       const id = await createQueue(user.uid, storeName, maxQueues);
-      setQrValue(`https://mosaic-waiting.vercel.app/queue/${id}`);
+      setQrValue(`https://your-website.com/queue/${id}`);
     }
   };
 
   return (
     <div>
       <h1>대기열 관리 시스템</h1>
-
       {user ? (
         <div>
           <h2>안녕하세요, 익명 사용자!</h2>
