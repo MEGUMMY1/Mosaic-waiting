@@ -16,7 +16,7 @@ export default function Home() {
   const handleCreateQueue = async () => {
     if (user) {
       const id = await createQueue(user.uid, storeName, maxQueues);
-      setQrValue(`https://your-website.com/queue/${id}`);
+      setQrValue(`https://mosaic-waiting.vercel.app/queue/${id}`);
     }
   };
 

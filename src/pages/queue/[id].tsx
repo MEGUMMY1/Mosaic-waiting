@@ -55,7 +55,7 @@ export default function QueuePage() {
         <p>대기열에 없습니다.</p>
       )}
       <h2>대기열 QR 코드</h2>
-      <QRCode value={`https://your-website.com/queue/${id}`} />
+      <QRCode value={`https://mosaic-waiting.vercel.app/queue/${id}`} />
     </div>
   );
 }
