@@ -13,14 +13,20 @@ export default function QueuePage() {
   const router = useRouter();
   const { id } = router.query;
   const [queueNumber, setQueueNumber] = useState<number | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (id) {
       const loginAsAnonymous = async () => {
-        const user = await signInAnonymously(auth);
-        setUserId(user.user.uid);
-        addUserToQueue(user.user.uid, id as string);
+        try {
+          const user = await signInAnonymously(auth);
+
+          await addUserToQueue(user.user.uid, id as string);
+        } catch (error) {
+          console.error("대기열에 추가하는 중 에러 발생:", error);
+        } finally {
+          setIsLoading(false);
+        }
       };
       loginAsAnonymous();
     }
@@ -49,7 +55,9 @@ export default function QueuePage() {
   return (
     <div>
       <h1>대기열 QR 코드</h1>
-      {queueNumber !== null ? (
+      {isLoading ? (
+        <p>대기열 정보를 불러오는 중입니다...</p>
+      ) : queueNumber !== null ? (
         <p>당신의 순번은 {queueNumber}번입니다.</p>
       ) : (
         <p>대기열에 없습니다.</p>
