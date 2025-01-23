@@ -1,0 +1,24 @@
+@import "@/styles/globals.scss";
+
+.button {
+  border: none;
+  transition: 0.3s;
+  cursor: pointer;
+  @include MEDIUM;
+  width: 100%;
+  display: inline-flex;
+  padding: 16px 24px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 16px;
+  background-color: #000;
+  color: #fff;
+  margin-top: 30px;
+}
+
+.button2 {
+  @extend .button;
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #000;
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { signInAnonymously, signOut, onAuthStateChanged, User } from "firebase/auth";
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "@/firebase/firebase";
 
 export function useAuth() {
@@ -12,12 +12,13 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  const anonymousLogin = async () => {
+  const login = async (email: string, password: string) => {
     try {
-      const result = await signInAnonymously(auth);
-      return result.user;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setUser(userCredential.user);
+      return userCredential.user;
     } catch (error) {
-      console.error("익명 로그인 실패:", error);
+      console.error("로그인 실패:", error);
       throw error;
     }
   };
@@ -28,9 +29,8 @@ export function useAuth() {
       setUser(null);
     } catch (error) {
       console.error("로그아웃 실패:", error);
-      throw error;
     }
   };
 
-  return { user, anonymousLogin, logout };
+  return { user, login, logout };
 }

@@ -18,6 +18,7 @@ export async function createQueue(userId: string, storeName: string, maxQueues: 
     maxQueues,
     currentNumber: 0,
     activeQueues: 0,
+    lastReset: new Date(),
   });
 
   await addDoc(collection(firestore, "stores", queueRef.id, "activeQueues"), {

@@ -13,11 +13,14 @@
     "@firebase/firestore": "^4.7.6",
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "firebase": "^11.2.0",
+    "firebase-admin": "^13.0.2",
+    "firebase-functions": "^6.2.0",
     "next": "15.1.6",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-firebase-hooks": "^5.1.1",
+    "sass": "^1.83.4",
     "uuid": "^11.0.5"
   },
   "devDependencies": {

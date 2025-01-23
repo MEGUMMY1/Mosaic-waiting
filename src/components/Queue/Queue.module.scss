@@ -1,0 +1,33 @@
+@import "@/styles/globals.scss";
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+
+  .title {
+    @include SEMIBOLD;
+    font-size: 1.6rem;
+    text-align: center;
+  }
+
+  .section {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .loading {
+    @include MEDIUM;
+    font-size: 16px;
+  }
+
+  .message {
+    @include SEMIBOLD;
+    font-size: 4rem;
+  }
+}
