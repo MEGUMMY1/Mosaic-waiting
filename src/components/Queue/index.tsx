@@ -133,14 +133,11 @@ export default function Queue() {
         />
       </Link>
       <h1 className={styles.title}>MOSAICSEOUL</h1>
-      <h2 className={styles.title}>대기 순번</h2>
+      {!isNotAllowed && <h2 className={styles.title}>대기 순번</h2>}
       {isLoading ? (
         <p className={styles.loading}>대기 정보를 불러오는 중입니다...</p>
       ) : isNotAllowed ? (
-        <p className={styles.warning}>
-          이 QR 코드는 {useDate ? formattedDate(useDate.toISOString()) : "해당 날짜"}의 오전 7시
-          이후에 사용 가능합니다.
-        </p>
+        <p className={styles.warning}>오전 7시부터 대기가 가능합니다.</p>
       ) : queueNumber !== null ? (
         <>
           <p className={styles.message}>{queueNumber}번</p>

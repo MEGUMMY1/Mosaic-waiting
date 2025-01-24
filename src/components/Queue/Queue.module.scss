@@ -30,4 +30,9 @@
     @include SEMIBOLD;
     font-size: 4rem;
   }
+
+  .warning {
+    @include SEMIBOLD;
+    font-size: 1.2rem;
+  }
 }
