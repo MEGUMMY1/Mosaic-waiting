@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { createQueue } from "@/services/queueService";
+import {
+  getCurrentQueueStatus,
+  getYesterdayQueue,
+  createNextDayQueue,
+} from "@/services/queueService";
 import { useAuth } from "@/hooks/useAuth";
 import { serviceUrl } from "@/constants/serviceurl";
 import styles from "./Main.module.scss";
 import Button from "../Button";
-import Input from "../Input";
 import Image from "next/image";
-import { doc, getDoc, updateDoc } from "@firebase/firestore";
-import { firestore } from "@/firebase/firebase";
 
 const QRCode = dynamic(() => import("qrcode.react").then((mod) => mod.QRCodeCanvas), {
   ssr: false,
@@ -17,32 +18,50 @@ const QRCode = dynamic(() => import("qrcode.react").then((mod) => mod.QRCodeCanv
 
 export default function Main() {
   const { user, logout } = useAuth();
-  const [storeName, setStoreName] = useState("");
-  const [maxQueues, setMaxQueues] = useState(0);
   const [qrValue, setQrValue] = useState("");
+  const [queueStatus, setQueueStatus] = useState({
+    maxQueues: 0,
+    currentActiveQueues: 0,
+    currentNumber: 0,
+  });
 
-  const handleCreateQueue = async () => {
-    if (user) {
-      const id = await createQueue(user.uid, storeName, maxQueues);
-      setQrValue(`${serviceUrl}/queue/${id}`);
+  useEffect(() => {
+    const fetchQueueData = async () => {
+      if (user) {
+        const yesterdayQueue = await getYesterdayQueue();
 
-      // 큐 생성 후 Firebase에서 리셋 상태 확인
-      const queueSnapshot = await getDoc(doc(firestore, "users", user.uid, "queues", id));
-      const queueData = queueSnapshot.data();
+        if (yesterdayQueue) {
+          const queueId = yesterdayQueue.id;
+          setQrValue(`${serviceUrl}/queue/${queueId}`);
 
-      if (queueData && queueData.lastReset) {
-        // 마지막 리셋 시간 이후로 대기열을 새로 시작했는지 확인
-        const lastReset = queueData.lastReset.toDate();
-        const now = new Date();
-        const resetTime = new Date(now.setHours(7, 0, 0, 0)); // 현재 7시로 설정
-        if (lastReset < resetTime) {
-          // 대기열을 초기화하고 시작
-          await updateDoc(doc(firestore, "users", user.uid, "queues", id), {
-            currentNumber: 0,
-            activeQueues: 0,
-          });
+          try {
+            const status = await getCurrentQueueStatus(queueId);
+            setQueueStatus(status);
+          } catch (error) {
+            alert("오전 7시부터 대기열 정보를 볼 수 있습니다.");
+            setQueueStatus({
+              maxQueues: 0,
+              currentActiveQueues: 0,
+              currentNumber: 0,
+            });
+          }
+        } else {
+          alert("어제 생성된 대기 QR코드가 없습니다.");
         }
       }
+    };
+
+    fetchQueueData();
+  }, [user]);
+
+  const handleCreateNextDayQueue = async () => {
+    try {
+      const queueId = await createNextDayQueue();
+      alert("내일 날짜의 대기 QR코드가 생성되었습니다.");
+      setQrValue(`${serviceUrl}/queue/${queueId}`);
+    } catch (error) {
+      console.error(error);
+      alert("대기열 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -66,22 +85,17 @@ export default function Main() {
         {user ? (
           <>
             <p className={styles.email}>{user.email}</p>
-            <Input
-              placeholder="매장 이름 (WEST | EAST)"
-              value={storeName}
-              onChange={(e) => setStoreName(e.target.value)}
-            />
-            <Input
-              isNumber
-              placeholder="최대 대기 인원 수(숫자만)"
-              value={maxQueues || ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                setMaxQueues(value === "" ? 0 : Number(value));
-              }}
-            />
+            <div className={styles.queueStatus}>
+              <p className={styles.message}>현재 대기 인원: {queueStatus.currentActiveQueues}명</p>
+              <p className={styles.message}>현재 대기 번호: {queueStatus.currentNumber}번</p>
+            </div>
             <div className={styles.btns}>
-              <Button onClick={handleCreateQueue}>대기열 생성</Button>
+              <Button onClick={handleCreateNextDayQueue} isLight>
+                (다음날) QR 생성
+              </Button>
+              <Link href="/qr-list">
+                <Button>QR list</Button>
+              </Link>
               <Button onClick={logout} isLight>
                 로그아웃
               </Button>

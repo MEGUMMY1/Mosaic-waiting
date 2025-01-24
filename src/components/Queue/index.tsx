@@ -13,7 +13,8 @@ export default function Queue() {
   const { id } = router.query;
   const [queueNumber, setQueueNumber] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const date = Date();
+  const [isBeforeStartTime, setIsBeforeStartTime] = useState<boolean>(false);
+  const date = new Date();
 
   useEffect(() => {
     const savedQueueNumber = localStorage.getItem("queueNumber");
@@ -22,7 +23,26 @@ export default function Queue() {
       setIsLoading(false);
     }
 
-    if (id) {
+    const checkStartTime = () => {
+      const currentTime = new Date();
+      const startTime = new Date(
+        currentTime.getFullYear(),
+        currentTime.getMonth(),
+        currentTime.getDate(),
+        7,
+        0,
+        0
+      );
+      if (currentTime < startTime) {
+        setIsBeforeStartTime(true);
+        setIsLoading(false);
+        return;
+      }
+    };
+
+    checkStartTime();
+
+    if (id && !isBeforeStartTime) {
       const loginAsAnonymous = async () => {
         try {
           const user = await signInAnonymously(auth);
@@ -35,7 +55,7 @@ export default function Queue() {
       };
       loginAsAnonymous();
     }
-  }, [id]);
+  }, [id, isBeforeStartTime]);
 
   const addUserToQueue = async (userId: string, queueId: string) => {
     const queueRef = collection(firestore, "queues", queueId, "users");
@@ -80,10 +100,12 @@ export default function Queue() {
       <h2 className={styles.title}>대기 순번</h2>
       {isLoading ? (
         <p className={styles.loading}>대기 정보를 불러오는 중입니다...</p>
+      ) : isBeforeStartTime ? (
+        <p className={styles.warning}>대기는 오전 7시부터 가능합니다. 이후 다시 접속해주세요.</p>
       ) : queueNumber !== null ? (
         <>
           <p className={styles.message}>{queueNumber}번</p>
-          <p className={styles.loading}>{formattedDate(date)}</p>
+          <p className={styles.loading}>{formattedDate(date.toISOString())}</p>
           <p className={styles.loading}>캡쳐 후 대기하시는 걸 추천합니다.</p>
         </>
       ) : (
