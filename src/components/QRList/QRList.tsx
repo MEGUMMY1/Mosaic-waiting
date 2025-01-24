@@ -7,22 +7,13 @@ import { serviceUrl } from "@/constants/serviceurl";
 import styles from "./QRList.module.scss";
 import Image from "next/image";
 import { deleteQueue } from "@/services/queueService";
-import firebase from "firebase/compat/app";
 
 const QRCode = dynamic(() => import("qrcode.react").then((mod) => mod.QRCodeCanvas), {
   ssr: false,
 });
 
-interface QueueData {
-  id: string;
-  date: firebase.firestore.Timestamp;
-  formattedDate: string;
-  storeName: string;
-  maxQueues: number;
-}
-
 export default function QRList() {
-  const [qrCodes, setQRCodes] = useState<QueueData[]>([]);
+  const [qrCodes, setQRCodes] = useState<any[]>([]); // any로 설정
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,11 +22,24 @@ export default function QRList() {
       const q = query(queuesRef, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
 
-      const codes: QueueData[] = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        formattedDate: doc.data().date.toDate().toLocaleDateString(),
-      })) as QueueData[];
+      const codes = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        const date = data.date.toDate(); // Firestore Timestamp를 JavaScript Date로 변환
+        const formattedDate = date.toLocaleDateString("ko-KR").replace(/\./g, "."); // `2000.00.00` 형식으로 변환
+
+        // `formattedDate`에서 하루 더하기
+        const dateParts = formattedDate.split(".");
+        const nextDay = new Date(date);
+        nextDay.setDate(date.getDate() + 1); // 하루 더하기
+        const formattedNextDay = nextDay.toLocaleDateString("ko-KR").replace(/\./g, ".");
+
+        return {
+          id: doc.id,
+          ...data,
+          formattedDate,
+          nextDay: formattedNextDay, // 하루를 더한 날짜
+        };
+      });
 
       setQRCodes(codes);
     };
@@ -82,27 +86,35 @@ export default function QRList() {
         <table className={styles.qrTable}>
           <thead>
             <tr>
-              <th>날짜</th>
+              <th>생성 날짜</th>
+              <th>사용 날짜</th>
               <th>QR 코드</th>
               <th>삭제</th>
             </tr>
           </thead>
           <tbody>
-            {qrCodes.map((queue) => (
-              <tr key={queue.id}>
-                <td>{queue.formattedDate}</td>
-                <td>
-                  <button onClick={() => handleQRView(queue.id)} className={styles.btn}>
-                    QR 보기
-                  </button>
-                </td>
-                <td>
-                  <button onClick={() => handleDeleteQueue(queue.id)} className={styles.btn}>
-                    삭제
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {qrCodes.map((queue) => {
+              const nextDay = new Date(queue.date.seconds * 1000);
+              nextDay.setDate(nextDay.getDate() + 1); // 하루 더하기
+              const formattedNextDay = nextDay.toLocaleDateString("ko-KR").replace(/\./g, ".");
+
+              return (
+                <tr key={queue.id}>
+                  <td>{queue.formattedDate}</td>
+                  <td>{formattedNextDay}</td>
+                  <td>
+                    <button onClick={() => handleQRView(queue.id)} className={styles.btn}>
+                      QR 보기
+                    </button>
+                  </td>
+                  <td>
+                    <button onClick={() => handleDeleteQueue(queue.id)} className={styles.btn}>
+                      삭제
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

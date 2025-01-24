@@ -9,8 +9,6 @@ import {
   getDocs,
   getDoc,
   Timestamp,
-  orderBy,
-  limit,
   deleteDoc,
   writeBatch,
 } from "firebase/firestore";
@@ -30,7 +28,7 @@ export async function createNextDayQueue() {
     activeQueues: 0,
     startTime: Timestamp.fromDate(startTime),
     endTime: Timestamp.fromDate(endTime),
-    date: Timestamp.fromDate(nextDay),
+    date: Timestamp.fromDate(today),
     isActive: false,
   });
 
