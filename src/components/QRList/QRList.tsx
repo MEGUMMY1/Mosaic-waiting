@@ -7,14 +7,22 @@ import { serviceUrl } from "@/constants/serviceurl";
 import styles from "./QRList.module.scss";
 import Image from "next/image";
 import { deleteQueue } from "@/services/queueService";
+import { useAuth } from "@/hooks/useAuth"; // useAuth 훅 import 추가
 
 const QRCode = dynamic(() => import("qrcode.react").then((mod) => mod.QRCodeCanvas), {
   ssr: false,
 });
 
 export default function QRList() {
+  const { user } = useAuth(); // user 정보 가져오기
   const [qrCodes, setQRCodes] = useState<any[]>([]); // any로 설정
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
+
+  // 로그인된 사용자 확인
+  if (!user || !user.emailVerified) {
+    // 이메일 인증이 안 된 사용자나 로그인하지 않은 사용자는 리다이렉트
+    return <p>로그인 후 이메일 인증을 진행해주세요.</p>; // 또는 로그인 페이지로 리다이렉트
+  }
 
   useEffect(() => {
     const fetchQRCodes = async () => {
