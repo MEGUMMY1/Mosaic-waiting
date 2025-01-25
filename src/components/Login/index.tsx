@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/firebase/firebase";
-import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router"; // useRouter 추가
+import { useAuth } from "@/hooks/useAuth"; // useAuth 훅 가져오기
 import styles from "./Login.module.scss";
 import Input from "../Input";
 import Button from "../Button";
@@ -11,13 +10,19 @@ import Link from "next/link";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const route = useRouter();
+  const { user, login } = useAuth(); // useAuth 훅 사용
+  const router = useRouter(); // useRouter 훅 사용
 
-  const loginRecordShop = async () => {
+  // 로그인 후 페이지 리다이렉션
+  useEffect(() => {
+    if (user) {
+      router.push("/"); // 로그인 후 홈으로 리다이렉트
+    }
+  }, [user, router]);
+
+  const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      route.push("/");
-      alert("로그인되었습니다!");
+      await login(email, password); // login 호출
     } catch (error) {
       console.error("로그인 실패:", error);
       alert("이메일 또는 비밀번호가 잘못되었습니다.");
@@ -50,7 +55,7 @@ export default function Login() {
           label="비밀번호"
           isPW
         />
-        <Button onClick={loginRecordShop}>로그인</Button>
+        <Button onClick={handleLogin}>로그인</Button>
       </section>
     </div>
   );

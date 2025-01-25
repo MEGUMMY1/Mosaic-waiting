@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/router"; // 라우터 사용
+import { useRouter } from "next/router";
 import {
   getCurrentQueueStatus,
   getYesterdayQueue,
@@ -19,7 +19,7 @@ const QRCode = dynamic(() => import("qrcode.react").then((mod) => mod.QRCodeCanv
 
 export default function Main() {
   const { user, logout } = useAuth();
-  const router = useRouter(); // 라우터 객체 사용
+  const router = useRouter();
   const [qrValue, setQrValue] = useState("");
   const [queueStatus, setQueueStatus] = useState({
     maxQueues: 0,
@@ -28,12 +28,12 @@ export default function Main() {
   });
 
   // 로그인한 사용자만 접근하도록 체크
-  useEffect(() => {
-    if (!user || !user.email) {
-      // 이메일 로그인한 사용자가 아니면 로그인 페이지로 리다이렉트
-      router.push("/login");
-    }
-  }, [user, router]);
+  // useEffect(() => {
+  //   if (!user || !user.email) {
+  //     // 이메일 로그인한 사용자가 아니면 로그인 페이지로 리다이렉트
+  //     router.replace("/login"); // `push` 대신 `replace` 사용
+  //   }
+  // }, [user, router]);
 
   useEffect(() => {
     const fetchQueueData = async () => {

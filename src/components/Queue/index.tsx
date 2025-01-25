@@ -16,7 +16,7 @@ import styles from "./Queue.module.scss";
 import { formattedDate } from "@/util/formatDate";
 import Link from "next/link";
 import Image from "next/image";
-import { getCurrentQueueStatus } from "@/services/queueService";
+import { activateQueue, getCurrentQueueStatus } from "@/services/queueService";
 
 export default function Queue() {
   const router = useRouter();
@@ -108,11 +108,8 @@ export default function Queue() {
       return;
     }
 
-    let newQueueNumber = 1;
-    if (!querySnapshot.empty) {
-      const lastUser = querySnapshot.docs[0];
-      newQueueNumber = lastUser.data().queueNumber + 1;
-    }
+    // 유저 수 기반으로 새로운 대기 번호 부여
+    const newQueueNumber = querySnapshot.empty ? 1 : querySnapshot.docs[0].data().queueNumber + 1;
 
     await addDoc(queueRef, {
       userId,
@@ -122,6 +119,25 @@ export default function Queue() {
 
     setQueueNumber(newQueueNumber);
     localStorage.setItem("queueNumber", String(newQueueNumber));
+
+    // 해당 날짜가 되었을 때 대기열 활성화
+    activateQueueIfNeeded(queueId);
+  };
+
+  const activateQueueIfNeeded = async (queueId: string) => {
+    const queueRef = doc(firestore, "dailyQueues", queueId);
+    const queueSnap = await getDoc(queueRef);
+
+    if (queueSnap.exists()) {
+      const queueData = queueSnap.data();
+      const now = new Date();
+      const startTime = queueData.startTime.toDate();
+
+      // 현재 시간이 7시가 지나면 대기열 활성화
+      if (now >= startTime && !queueData.isActive) {
+        await activateQueue(queueId);
+      }
+    }
   };
 
   return (

@@ -108,14 +108,9 @@ export async function getCurrentQueueStatus(queueId: string) {
     throw new Error("Queue 데이터를 찾을 수 없습니다.");
   }
 
-  // QR 사용 가능한 날짜와 현재 시간 비교
-  const now = new Date();
-  const queueDate = queueData.date.toDate(); // Timestamp를 Date로 변환
-  const startTime = queueData.startTime.toDate(); // startTime을 Timestamp에서 Date로 변환
-
-  // 현재 시간이 QR 사용 날짜의 7시 이전이라면 접속 제한
-  if (now < startTime) {
-    throw new Error("현재 시간에는 QR을 사용할 수 없습니다.");
+  // 대기열이 활성화된 상태인지 확인
+  if (!queueData.isActive) {
+    await activateQueue(queueId);
   }
 
   const activeQueuesRef = collection(firestore, "dailyQueues", queueId, "activeQueues");
