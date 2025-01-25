@@ -14,15 +14,8 @@ const QRCode = dynamic(() => import("qrcode.react").then((mod) => mod.QRCodeCanv
 });
 
 export default function QRList() {
-  const { user } = useAuth(); // user 정보 가져오기
-  const [qrCodes, setQRCodes] = useState<any[]>([]); // any로 설정
+  const [qrCodes, setQRCodes] = useState<any[]>([]);
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
-
-  // 로그인된 사용자 확인
-  if (!user || !user.emailVerified) {
-    // 이메일 인증이 안 된 사용자나 로그인하지 않은 사용자는 리다이렉트
-    return <p>로그인 후 이메일 인증을 진행해주세요.</p>; // 또는 로그인 페이지로 리다이렉트
-  }
 
   useEffect(() => {
     const fetchQRCodes = async () => {
@@ -32,7 +25,7 @@ export default function QRList() {
 
       const codes = querySnapshot.docs.map((doc) => {
         const data = doc.data();
-        const date = data.date.toDate(); // Firestore Timestamp를 JavaScript Date로 변환
+        const date = data.date.toDate();
         const formattedDate = date.toLocaleDateString("ko-KR").replace(/\./g, "."); // `2000.00.00` 형식으로 변환
 
         // `formattedDate`에서 하루 더하기

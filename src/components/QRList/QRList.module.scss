@@ -41,7 +41,7 @@
 
     th,
     td {
-      padding: 12px;
+      padding: 10px 2px;
       text-align: left;
       border-bottom: 1px solid #ddd;
       @include MEDIUM;
@@ -75,7 +75,8 @@
   .overlay {
     position: fixed;
     top: 0;
-    width: 598px;
+    left: 0; /* 왼쪽도 0으로 설정 */
+    width: 100%; /* 전체 너비 */
     height: 100%;
     background-color: #fff;
     display: flex;
@@ -96,8 +97,15 @@
 
   .closeBtn {
     position: absolute;
-    top: 80px;
-    right: 20px;
+    top: 10px;
+    right: 10px;
     cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    .closeBtn {
+      top: 60px;
+      right: 20px;
+    }
   }
 }
