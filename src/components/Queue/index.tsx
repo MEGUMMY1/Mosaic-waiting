@@ -97,7 +97,7 @@ export default function Queue() {
   }, [id]);
 
   const addUserToQueue = async (userId: string, queueId: string) => {
-    const queueRef = collection(firestore, "queues", queueId, "users");
+    const queueRef = collection(firestore, "dailyQueues", queueId, "users");
     const q = query(queueRef, orderBy("queueNumber", "desc"), limit(1));
     const querySnapshot = await getDocs(q);
 
