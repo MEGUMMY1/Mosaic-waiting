@@ -22,8 +22,8 @@ export default function Queue() {
   const { id } = router.query;
   const [queueNumber, setQueueNumber] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isNotAllowed, setIsNotAllowed] = useState<boolean>(false); // 사용 불가 여부
-  const [useDate, setUseDate] = useState<Date | null>(null); // QR 코드 사용 날짜
+  const [isNotAllowed, setIsNotAllowed] = useState<boolean>(false);
+  const [useDate, setUseDate] = useState<Date | null>(null);
   const date = new Date();
 
   useEffect(() => {
@@ -36,28 +36,30 @@ export default function Queue() {
     if (id) {
       const checkAccessAvailability = async () => {
         try {
-          // QR 코드의 사용 날짜 가져오기
           const qrDocRef = doc(firestore, "queues", id as string);
           const qrDocSnap = await getDoc(qrDocRef);
 
           if (qrDocSnap.exists()) {
             const qrData = qrDocSnap.data();
-            const qrUseDate = new Date(qrData.useDate); // QR의 사용 날짜
+            const qrUseDate = new Date(qrData.useDate);
             setUseDate(qrUseDate);
 
-            // 현재 시간과 QR 사용 날짜 비교
             const currentTime = new Date();
             const useStartTime = new Date(
               qrUseDate.getFullYear(),
               qrUseDate.getMonth(),
               qrUseDate.getDate(),
-              7, // 사용 날짜의 오전 7시
+              7,
               0,
               0
             );
 
-            if (currentTime < useStartTime) {
-              // 사용 날짜의 7시 이전이면 접속 불가
+            const isSameDay =
+              currentTime.getFullYear() === useStartTime.getFullYear() &&
+              currentTime.getMonth() === useStartTime.getMonth() &&
+              currentTime.getDate() === useStartTime.getDate();
+
+            if (!isSameDay || currentTime.getHours() < 7) {
               setIsNotAllowed(true);
               setIsLoading(false);
               return;
@@ -75,7 +77,6 @@ export default function Queue() {
           return;
         }
 
-        // 대기열에 추가
         const loginAsAnonymous = async () => {
           try {
             const user = await signInAnonymously(auth);
