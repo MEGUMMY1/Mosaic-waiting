@@ -96,7 +96,6 @@ export default function Main() {
           <>
             <p className={styles.email}>{user.email}</p>
             <div className={styles.queueStatus}>
-              <p className={styles.message}>현재 대기 인원: {queueStatus.currentActiveQueues}명</p>
               <p className={styles.message}>현재 대기 번호: {queueStatus.currentNumber}번</p>
             </div>
             <div className={styles.btns}>

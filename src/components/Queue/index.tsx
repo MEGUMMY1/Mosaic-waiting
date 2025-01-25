@@ -135,12 +135,9 @@ export default function Queue() {
     if (queueSnap.exists()) {
       const queueData = queueSnap.data();
 
-      // activeQueues와 currentNumber 업데이트
-      const updatedActiveQueues = queueData.activeQueues + 1; // 새로운 유저가 추가되어 활성 대기자 수 증가
       const updatedCurrentNumber = newQueueNumber; // 새로운 대기 번호 설정
 
       await updateDoc(queueRef, {
-        activeQueues: updatedActiveQueues,
         currentNumber: updatedCurrentNumber,
       });
     }
