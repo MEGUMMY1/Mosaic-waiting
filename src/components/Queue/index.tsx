@@ -10,6 +10,7 @@ import {
   addDoc,
   doc,
   getDoc,
+  updateDoc,
 } from "@firebase/firestore";
 import { signInAnonymously } from "@firebase/auth";
 import styles from "./Queue.module.scss";
@@ -117,11 +118,32 @@ export default function Queue() {
       createdAt: new Date(),
     });
 
+    // currentNumber와 activeQueues 갱신
+    await updateQueueStatus(queueId, newQueueNumber);
+
     setQueueNumber(newQueueNumber);
     localStorage.setItem("queueNumber", String(newQueueNumber));
 
     // 해당 날짜가 되었을 때 대기열 활성화
     activateQueueIfNeeded(queueId);
+  };
+
+  const updateQueueStatus = async (queueId: string, newQueueNumber: number) => {
+    const queueRef = doc(firestore, "dailyQueues", queueId);
+    const queueSnap = await getDoc(queueRef);
+
+    if (queueSnap.exists()) {
+      const queueData = queueSnap.data();
+
+      // activeQueues와 currentNumber 업데이트
+      const updatedActiveQueues = queueData.activeQueues + 1; // 새로운 유저가 추가되어 활성 대기자 수 증가
+      const updatedCurrentNumber = newQueueNumber; // 새로운 대기 번호 설정
+
+      await updateDoc(queueRef, {
+        activeQueues: updatedActiveQueues,
+        currentNumber: updatedCurrentNumber,
+      });
+    }
   };
 
   const activateQueueIfNeeded = async (queueId: string) => {
