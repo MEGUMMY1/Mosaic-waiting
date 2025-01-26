@@ -111,14 +111,7 @@ export async function getCurrentQueueStatus(queueId: string) {
   // QR 사용 가능한 날짜와 현재 시간 비교
   const now = new Date();
   const queueDate = queueData.date.toDate(); // Timestamp를 Date로 변환
-  const startTime = new Date(
-    queueDate.getFullYear(),
-    queueDate.getMonth(),
-    queueDate.getDate(),
-    7,
-    0,
-    0
-  );
+  const startTime = queueData.startTime.toDate(); // startTime을 Timestamp에서 Date로 변환
 
   // 현재 시간이 QR 사용 날짜의 7시 이전이라면 접속 제한
   if (now < startTime) {

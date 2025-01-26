@@ -16,6 +16,7 @@ import styles from "./Queue.module.scss";
 import { formattedDate } from "@/util/formatDate";
 import Link from "next/link";
 import Image from "next/image";
+import { getCurrentQueueStatus } from "@/services/queueService";
 
 export default function Queue() {
   const router = useRouter();
@@ -36,58 +37,59 @@ export default function Queue() {
     if (id) {
       const checkAccessAvailability = async () => {
         try {
-          const qrDocRef = doc(firestore, "queues", id as string);
+          console.log("Queue id: ", id);
+          const qrDocRef = doc(firestore, "dailyQueues", id as string);
           const qrDocSnap = await getDoc(qrDocRef);
-
+          console.log("getDoc: ", qrDocSnap.exists());
           if (qrDocSnap.exists()) {
             const qrData = qrDocSnap.data();
-            const qrUseDate = new Date(qrData.useDate);
-            setUseDate(qrUseDate);
+            console.log("getDoc: ", qrDocSnap.data());
 
+            // 현재 시간을 오전 7시로 고정
             const currentTime = new Date();
-            const useStartTime = new Date(
-              qrUseDate.getFullYear(),
-              qrUseDate.getMonth(),
-              qrUseDate.getDate(),
-              7,
-              0,
-              0
-            );
+            const queueUseDate = new Date(currentTime);
+            queueUseDate.setHours(7, 0, 0, 0); // 오전 7시로 설정
 
-            const isSameDay =
-              currentTime.getFullYear() === useStartTime.getFullYear() &&
-              currentTime.getMonth() === useStartTime.getMonth() &&
-              currentTime.getDate() === useStartTime.getDate();
+            // 날짜 비교: 현재 날짜가 대기 가능한 날짜인지
+            const isCorrectDate =
+              currentTime.getFullYear() === queueUseDate.getFullYear() &&
+              currentTime.getMonth() === queueUseDate.getMonth() &&
+              currentTime.getDate() === queueUseDate.getDate();
 
-            if (!isSameDay || currentTime.getHours() < 7) {
+            const isAfter7AM = currentTime >= queueUseDate; // 오전 7시 이후인지 비교
+
+            if (!isCorrectDate || !isAfter7AM) {
               setIsNotAllowed(true);
               setIsLoading(false);
               return;
             }
+
+            // 큐 상태 가져오기
+            const queueStatus = await getCurrentQueueStatus(id as string);
+            console.log("큐 상태:", queueStatus);
+
+            // 대기열에 추가
+            const loginAsAnonymous = async () => {
+              try {
+                const user = await signInAnonymously(auth);
+                await addUserToQueue(user.user.uid, id as string);
+              } catch (error) {
+                console.error("대기열에 추가하는 중 에러 발생:", error);
+              } finally {
+                setIsLoading(false);
+              }
+            };
+            loginAsAnonymous();
           } else {
             console.error("QR 코드 데이터가 없습니다.");
             setIsNotAllowed(true);
             setIsLoading(false);
-            return;
           }
         } catch (error) {
           console.error("QR 코드 확인 중 에러 발생:", error);
           setIsNotAllowed(true);
           setIsLoading(false);
-          return;
         }
-
-        const loginAsAnonymous = async () => {
-          try {
-            const user = await signInAnonymously(auth);
-            await addUserToQueue(user.user.uid, id as string);
-          } catch (error) {
-            console.error("대기열에 추가하는 중 에러 발생:", error);
-          } finally {
-            setIsLoading(false);
-          }
-        };
-        loginAsAnonymous();
       };
 
       checkAccessAvailability();
